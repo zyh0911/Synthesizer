@@ -25,6 +25,14 @@ void database::print_node_info(int id)
     print_node_info(nodes.at(id).rightson);
   }
 }
+void database::output_nodes()
+{
+  std::cout<<nodes.size()<<std::endl;
+  for (auto &node : nodes)
+  {
+    std::cout << node.name << " " << node.leftson << " " << node.rightson << " " << node.type << std::endl;
+  }
+}
 
 void database::read(std::string filename)
 {
@@ -53,10 +61,10 @@ void database::read(std::string filename)
 
 void database::output()
 {
-  for (auto token : tokens)
-  {
-    std::cout << token << std::endl;
-  }
+  // for (auto token : tokens)
+  // {
+  //   std::cout << token << std::endl;
+  // }
   print_node_info(top_node);
 }
 
@@ -92,7 +100,7 @@ void database::parser_parent()
   }
 }
 
-int database::parser_not(std::list<std::string>& tks)
+int database::parser_not(std::list<std::string> &tks)
 {
   auto it = tks.begin();
   while (it != tks.end())
@@ -101,6 +109,8 @@ int database::parser_not(std::list<std::string>& tks)
     {
       auto start = it++;
       nodes.emplace_back();
+      nodes.back().name = aid_name.front();
+      top_node=nodes.size()-1;
       nodes.back().type = 0;
       if (name_map.find(*it) == name_map.end())
       {
@@ -108,6 +118,7 @@ int database::parser_not(std::list<std::string>& tks)
         nodes.emplace_back();
         nodes.back().type = 3;
         nodes.back().name = aid_name.front();
+        aid_name.pop_front();
         name_map.emplace(*it, nodes.size() - 1);
       }
       else
@@ -129,7 +140,7 @@ int database::parser_not(std::list<std::string>& tks)
   return parser_ANDOR(tks);
 }
 
-int database::parser_ANDOR(std::list<std::string>& tks)
+int database::parser_ANDOR(std::list<std::string> &tks)
 {
   std::string last_token;
   bool isop = false;
@@ -140,7 +151,7 @@ int database::parser_ANDOR(std::list<std::string>& tks)
       top_node = nodes.size();
       nodes.emplace_back();
       nodes.back().name = aid_name.front();
-      aid_name.pop_front();
+      //aid_name.pop_front();
       nodes.back().leftson = name_map.at(last_token);
       nodes.back().type = 1;
       isop = true;
@@ -151,7 +162,6 @@ int database::parser_ANDOR(std::list<std::string>& tks)
       top_node = nodes.size();
       nodes.emplace_back();
       nodes.back().name = aid_name.front();
-      aid_name.pop_front();
       nodes.back().leftson = name_map.at(last_token);
       nodes.back().type = 2;
       isop = true;
@@ -218,5 +228,6 @@ void database::parser()
   parser_parent();
   parser_not(tokens);
   parser_ANDOR(tokens);
+  output_nodes();
   output();
 }

@@ -12,7 +12,7 @@ public:
   std::string name;
   int leftson = -1;
   int rightson = -1;
-  int type = -1; // 0: NOT 1: AND 2:OR 3: INPUT 4:PARENT
+  int type = -1; // 0: NOT 1: AND 2:OR 3: INPUT 
 
 };
 
@@ -30,6 +30,7 @@ private:
   void erase();
   int parser_ANDOR(std::list<std::string>& tks);
   void print_node_info( int id);
+  void output_nodes();
 public:
   database() = default;
   void read(std::string filename);
