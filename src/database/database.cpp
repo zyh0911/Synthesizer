@@ -5,6 +5,7 @@
 #include <cstring>
 #include <fstream>
 #include <iostream>
+#include <cctype>
 #include <string>
 
 void database::print_node_info(int id)
@@ -192,7 +193,7 @@ int database::parser_ANDOR(std::list<std::string> &tks)
           nodes.back().rightson = name_map.at(token);
           last_token = nodes.back().name;
         }
-        
+
         isop = false;
       }
       else
@@ -239,6 +240,112 @@ void database::parser()
   parser_parent();
   parser_not(tokens);
   parser_ANDOR(tokens);
-  output_nodes();
-  output();
+  convert_aig();
+  // output_nodes();
+  // output();
+}
+
+int database::getnodenum(int id)
+{
+  if (nodes.at(id).type == 3)
+  {
+    return input_map.at(nodes.at(id).name);
+  }
+  else if (nodes.at(id).type == 0)
+  {
+    return 1 + getnodenum(nodes.at(id).rightson);
+  }
+  else if (nodes.at(id).type == 1)
+  {
+    int left = getnodenum(nodes.at(id).leftson);
+    int right = getnodenum(nodes.at(id).rightson);
+    if (gate_map.find(std::make_pair(left, right)) != gate_map.end())
+    {
+      return gate_map.at(std::make_pair(left, right));
+    }
+    gate_map.emplace(std::make_pair(left, right), gate_num);
+    aig_gates.emplace_back();
+    aig_gates.back().emplace_back(gate_num);
+    aig_gates.back().emplace_back(left);
+    aig_gates.back().emplace_back(right);
+    gate_num += 2;
+    return gate_num - 2;
+  }
+  else if (nodes.at(id).type == 2)
+  {
+    int left;
+    if (getnodenum(nodes.at(id).leftson) % 2 == 1)
+    {
+      left = getnodenum(nodes.at(id).leftson) - 1;
+    }
+    else
+    {
+      left = getnodenum(nodes.at(id).leftson) + 1;
+    }
+    int right = getnodenum(nodes.at(id).rightson) + 1;
+    if (gate_map.find(std::make_pair(left, right)) != gate_map.end())
+    {
+      return gate_map.at(std::make_pair(left, right));
+    }
+    gate_map.emplace(std::make_pair(left, right), gate_num);
+    aig_gates.emplace_back();
+    aig_gates.back().emplace_back(gate_num);
+    aig_gates.back().emplace_back(left);
+    aig_gates.back().emplace_back(right);
+    gate_num += 2;
+    return gate_num - 1;
+  }
+}
+
+void database::convert_aig()
+{
+  for (int i = 0; i < nodes.size(); i++)
+  {
+    int left_son = nodes.at(i).leftson;
+    int right_son = nodes.at(i).rightson;
+    for (int j = i + 1; j < nodes.size(); j++)
+    {
+      if (nodes.at(j).check(left_son, right_son))
+      {
+        nodes.at(j).name = nodes.at(i).name;
+      }
+    }
+  }
+
+  for (int i = 0; i < nodes.size(); i++)
+  {
+    if (std::islower(nodes.at(i).name[0]))
+    {
+      if (input_map.find(nodes.at(i).name) == input_map.end())
+      {
+        input_map.emplace(nodes.at(i).name, input_num);
+        input_num += 2;
+      }
+    }
+  }
+
+  gate_num = input_num + 2;
+  output_num = getnodenum(top_node);
+  std::cout << "aag " << input_map.size() + aig_gates.size() << " " << input_map.size() << " 0 1 " << aig_gates.size() << std::endl;
+
+  for (int i = 0; i < input_map.size(); i++)
+  {
+    std::cout << 2 * i + 2 << std::endl;
+  }
+
+  if (nodes.at(top_node).type == 2)
+  {
+    aig_gates.back().at(0) = input_num;
+    std::cout << input_num+1 << std::endl;
+  }
+  else
+  {
+    aig_gates.back().at(0) = input_num;
+    std::cout << input_num  << std::endl;
+  }
+
+  for (const auto &aiggate : aig_gates)
+  {
+    std::cout << aiggate.at(0) << " " << aiggate.at(1) << " " << aiggate.at(2) << std::endl;
+  }
 }
