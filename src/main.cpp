@@ -12,6 +12,9 @@ int main(int argc, char *argv[]) {
     db.read(filename1);
     db.parser();
   } else if (argc > 2) {
+    database db = database();
+    db.read(argv[1]);
+    db.parser();
   }
   return 0;
 }
