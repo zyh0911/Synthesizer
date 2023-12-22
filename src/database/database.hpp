@@ -19,7 +19,7 @@ public:
 class database
 {
 private:
-  std::list<std::string> aid_name{"Z","Y","H","A","B","C","F","K","X"};
+  std::list<std::string> aid_name{"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O"};
   std::list<std::string> tokens;
   std::vector<node> nodes;
   std::map<std::string, int> name_map; // <input name, nodeid>
