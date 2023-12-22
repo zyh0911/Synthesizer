@@ -333,7 +333,7 @@ void database::convert_aig()
     std::cout << 2 * i + 2 << std::endl;
   }
 
-  if (nodes.at(top_node).type == 2)
+  if (nodes.at(top_node).type == 2 or nodes.at(top_node).type == 0)
   {
     aig_gates.back().at(0) = input_num;
     std::cout << input_num+1 << std::endl;
